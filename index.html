@@ -14,15 +14,6 @@ padding:20px;
 transition:background 0.4s;
 }
 
-h1{
-margin-top:10px;
-}
-
-#datetime{
-font-size:16px;
-margin-top:5px;
-}
-
 #timer{
 font-size:60px;
 margin:25px 0;
@@ -67,6 +58,11 @@ padding:8px;
 text-align:center;
 }
 
+#summary{
+margin-top:30px;
+font-size:18px;
+}
+
 </style>
 </head>
 
@@ -98,6 +94,8 @@ text-align:center;
 
 <div>Total Read Time: <span id="totalRead">00:00:00</span></div>
 
+<div id="summary"></div>
+
 <div id="log">
 
 <h2>Session Log</h2>
@@ -126,6 +124,8 @@ let totalRead=0;
 
 let flickerInterval;
 let flickerSpeed=0;
+
+let logs = JSON.parse(localStorage.getItem("studyLogs")) || [];
 
 function format(sec){
 
@@ -233,52 +233,83 @@ mode="";
 
 function resetTimer(){
 
-let confirmReset=confirm("Are you sure? The session log will reset now?");
+let confirmReset=confirm("This will erase all logs. Continue?");
 
 if(!confirmReset) return;
 
-clearInterval(timer);
+localStorage.removeItem("studyLogs");
 
-seconds=0;
-mode="";
-totalRead=0;
-
-document.getElementById("timer").innerText="00:00:00";
-document.getElementById("totalRead").innerText="00:00:00";
-
-document.getElementById("logTable").innerHTML="";
-
-document.body.style.background="#f4f4f4";
+location.reload();
 
 }
 
 function logSession(){
 
-let table=document.getElementById("logTable");
-
-let row=table.insertRow();
-
-let c1=row.insertCell(0);
-let c2=row.insertCell(1);
-let c3=row.insertCell(2);
-let c4=row.insertCell(3);
-
 let now=new Date();
 
 let subject = mode=="RELAX" ? "Break" : document.getElementById("subject").value;
 
-c1.innerText=now.toLocaleString();
-c2.innerText=subject;
-c3.innerText=mode;
-c4.innerText=format(seconds);
+let entry = {
 
-if(mode=="READ"){
+date: now.toLocaleString(),
+subject: subject,
+mode: mode,
+duration: seconds
 
-totalRead+=seconds;
+};
+
+logs.push(entry);
+
+localStorage.setItem("studyLogs",JSON.stringify(logs));
+
+renderLogs();
+
+}
+
+function renderLogs(){
+
+let table=document.getElementById("logTable");
+
+table.innerHTML="";
+
+let subjectTotals={};
+
+totalRead=0;
+
+logs.forEach(log=>{
+
+let row=table.insertRow();
+
+row.insertCell(0).innerText=log.date;
+row.insertCell(1).innerText=log.subject;
+row.insertCell(2).innerText=log.mode;
+row.insertCell(3).innerText=format(log.duration);
+
+if(log.mode=="READ"){
+
+totalRead+=log.duration;
+
+if(!subjectTotals[log.subject]){
+subjectTotals[log.subject]=0;
+}
+
+subjectTotals[log.subject]+=log.duration;
+
+}
+
+});
 
 document.getElementById("totalRead").innerText=format(totalRead);
 
+let summary="";
+
+for(let sub in subjectTotals){
+
+summary += sub + " : " + format(subjectTotals[sub]) + "<br>";
+
 }
+
+document.getElementById("summary").innerHTML=summary;
 
 }
 
@@ -292,9 +323,7 @@ document.getElementById("datetime").innerText=now.toLocaleString();
 
 setInterval(updateDateTime,1000);
 
-window.onbeforeunload=function(){
-return "Are you sure? The session log will reset now?";
-};
+renderLogs();
 
 </script>
 
