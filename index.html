@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <title>One Session Closer to CA</title>
@@ -6,33 +6,35 @@
 <style>
 
 body{
-font-family:Arial;
+font-family:Arial, sans-serif;
 text-align:center;
 background:#f4f4f4;
+margin:0;
+padding:20px;
 transition:background 0.4s;
 }
 
 h1{
-margin-top:20px;
+margin-top:10px;
 }
 
 #datetime{
-font-size:18px;
-margin-top:10px;
+font-size:16px;
+margin-top:5px;
 }
 
 #timer{
 font-size:60px;
-margin:20px;
+margin:25px 0;
 }
 
 button{
-padding:15px 25px;
+padding:15px 30px;
 font-size:18px;
 margin:10px;
-cursor:pointer;
 border:none;
 border-radius:6px;
+cursor:pointer;
 }
 
 #readBtn{background:green;color:white;}
@@ -47,16 +49,16 @@ margin-top:10px;
 }
 
 #log{
-margin-top:30px;
-width:70%;
+margin-top:40px;
+max-width:700px;
 margin-left:auto;
 margin-right:auto;
-text-align:left;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
+margin-top:10px;
 }
 
 th,td{
@@ -76,7 +78,6 @@ text-align:center;
 
 <div id="timer">00:00:00</div>
 
-<div>
 <select id="subject">
 <option value="FR">FR</option>
 <option value="AFM">AFM</option>
@@ -85,7 +86,8 @@ text-align:center;
 <option value="IDT">IDT</option>
 <option value="IBS">IBS</option>
 </select>
-</div>
+
+<br>
 
 <button id="readBtn" onclick="startRead()">READ</button>
 <button id="relaxBtn" onclick="startRelax()">RELAX</button>
@@ -291,9 +293,7 @@ document.getElementById("datetime").innerText=now.toLocaleString();
 setInterval(updateDateTime,1000);
 
 window.onbeforeunload=function(){
-
 return "Are you sure? The session log will reset now?";
-
 };
 
 </script>
