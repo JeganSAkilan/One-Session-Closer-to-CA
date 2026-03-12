@@ -59,7 +59,7 @@ text-align:center;
 }
 
 #summary{
-margin-top:30px;
+margin-top:25px;
 font-size:18px;
 }
 
@@ -117,13 +117,12 @@ font-size:18px;
 
 <script>
 
+let mode = "";
+let startTime = null;
 let timer;
-let seconds=0;
-let mode="";
-let totalRead=0;
 
 let flickerInterval;
-let flickerSpeed=0;
+let flickerSpeed = 0;
 
 let logs = JSON.parse(localStorage.getItem("studyLogs")) || [];
 
@@ -139,11 +138,19 @@ String(s).padStart(2,'0');
 
 }
 
+function getElapsed(){
+
+if(!startTime) return 0;
+
+return Math.floor((Date.now() - startTime) / 1000);
+
+}
+
 function updateTimer(){
 
-seconds++;
+let seconds = getElapsed();
 
-document.getElementById("timer").innerText=format(seconds);
+document.getElementById("timer").innerText = format(seconds);
 
 if(mode=="RELAX"){
 
@@ -163,13 +170,14 @@ function startFlicker(speed){
 
 clearInterval(flickerInterval);
 
-flickerSpeed=speed;
+flickerSpeed = speed;
 
 let toggle=false;
 
 flickerInterval=setInterval(()=>{
 
-document.body.style.background = toggle ? "#ffcccc" : "#ff6666";
+document.body.style.background =
+toggle ? "#ffcccc" : "#ff6666";
 
 toggle=!toggle;
 
@@ -184,36 +192,34 @@ flickerSpeed=0;
 
 }
 
+function startSession(newMode){
+
+if(startTime){
+stopTimer();
+}
+
+mode = newMode;
+startTime = Date.now();
+
+localStorage.setItem("currentMode",mode);
+localStorage.setItem("startTime",startTime);
+
+timer = setInterval(updateTimer,1000);
+
+}
+
 function startRead(){
 
-switchMode("READ");
-
+startSession("READ");
 stopFlicker();
-
 document.body.style.background="#e8ffe8";
 
 }
 
 function startRelax(){
 
-switchMode("RELAX");
-
+startSession("RELAX");
 document.body.style.background="#ffcccc";
-
-}
-
-function switchMode(newMode){
-
-if(mode!="" && seconds>0){
-logSession();
-}
-
-mode=newMode;
-seconds=0;
-
-clearInterval(timer);
-
-timer=setInterval(updateTimer,1000);
 
 }
 
@@ -221,60 +227,55 @@ function stopTimer(){
 
 clearInterval(timer);
 
-stopFlicker();
+let seconds = getElapsed();
 
-if(mode!="" && seconds>0){
-logSession();
+if(seconds>0){
+
+let subject = mode=="RELAX"
+? "Break"
+: document.getElementById("subject").value;
+
+logs.push({
+date:new Date().toLocaleString(),
+subject:subject,
+mode:mode,
+duration:seconds
+});
+
+localStorage.setItem("studyLogs",JSON.stringify(logs));
+
 }
 
 mode="";
+startTime=null;
+
+localStorage.removeItem("currentMode");
+localStorage.removeItem("startTime");
+
+document.getElementById("timer").innerText="00:00:00";
+
+stopFlicker();
+
+renderLogs();
 
 }
 
 function resetTimer(){
 
-let confirmReset=confirm("This will erase all logs. Continue?");
+if(!confirm("Erase all logs?")) return;
 
-if(!confirmReset) return;
-
-localStorage.removeItem("studyLogs");
-
+localStorage.clear();
 location.reload();
-
-}
-
-function logSession(){
-
-let now=new Date();
-
-let subject = mode=="RELAX" ? "Break" : document.getElementById("subject").value;
-
-let entry = {
-
-date: now.toLocaleString(),
-subject: subject,
-mode: mode,
-duration: seconds
-
-};
-
-logs.push(entry);
-
-localStorage.setItem("studyLogs",JSON.stringify(logs));
-
-renderLogs();
 
 }
 
 function renderLogs(){
 
 let table=document.getElementById("logTable");
-
 table.innerHTML="";
 
 let subjectTotals={};
-
-totalRead=0;
+let totalRead=0;
 
 logs.forEach(log=>{
 
@@ -309,21 +310,37 @@ summary += sub + " : " + format(subjectTotals[sub]) + "<br>";
 
 }
 
-document.getElementById("summary").innerHTML=summary;
+document.getElementById("summary").innerHTML = summary;
+
+}
+
+function restoreSession(){
+
+let savedMode = localStorage.getItem("currentMode");
+let savedStart = localStorage.getItem("startTime");
+
+if(savedMode && savedStart){
+
+mode = savedMode;
+startTime = parseInt(savedStart);
+
+timer = setInterval(updateTimer,1000);
+
+}
 
 }
 
 function updateDateTime(){
 
-let now=new Date();
-
-document.getElementById("datetime").innerText=now.toLocaleString();
+document.getElementById("datetime").innerText =
+new Date().toLocaleString();
 
 }
 
 setInterval(updateDateTime,1000);
 
 renderLogs();
+restoreSession();
 
 </script>
 
