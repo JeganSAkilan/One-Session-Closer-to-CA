@@ -179,4 +179,124 @@ document.getElementById("totalRead").innerText=format(totalRead);
 </script>
 
 </body>
+</html><button id="relaxBtn" onclick="startRelax()">RELAX</button>
+<button id="stopBtn" onclick="stopTimer()">STOP</button>
+<button id="resetBtn" onclick="resetTimer()">RESET</button>
+
+<h3>CONTROL TIME CONQUER TITLE</h3>
+  
+<div>Total Read Time: <span id="totalRead">00:00:00</span></div>
+
+<div id="log">
+<h2>Session Log</h2>
+<table>
+<tr>
+<th>Mode</th>
+<th>Duration</th>
+</tr>
+<tbody id="logTable"></tbody>
+</table>
+</div>
+
+<script>
+
+let timer;
+let seconds=0;
+let mode="";
+let startTime=0;
+let totalRead=0;
+
+function format(sec){
+let h=Math.floor(sec/3600);
+let m=Math.floor((sec%3600)/60);
+let s=sec%60;
+
+return String(h).padStart(2,'0')+":"+
+       String(m).padStart(2,'0')+":"+
+       String(s).padStart(2,'0');
+}
+
+function updateTimer(){
+seconds++;
+document.getElementById("timer").innerText=format(seconds);
+}
+
+function startRead(){
+
+switchMode("READ");
+
+document.body.style.background="#e8ffe8";
+
+}
+
+function startRelax(){
+
+switchMode("RELAX");
+
+document.body.style.background="#ffcccc";
+
+}
+
+function switchMode(newMode){
+
+if(mode!=""){
+logSession();
+}
+
+mode=newMode;
+seconds=0;
+
+clearInterval(timer);
+
+timer=setInterval(updateTimer,1000);
+
+}
+
+function stopTimer(){
+
+clearInterval(timer);
+
+if(mode!=""){
+logSession();
+mode="";
+}
+
+}
+
+function resetTimer(){
+
+clearInterval(timer);
+seconds=0;
+mode="";
+totalRead=0;
+
+document.getElementById("timer").innerText="00:00:00";
+document.getElementById("totalRead").innerText="00:00:00";
+document.getElementById("logTable").innerHTML="";
+document.body.style.background="#f4f4f4";
+
+}
+
+function logSession(){
+
+let table=document.getElementById("logTable");
+
+let row=table.insertRow();
+
+let c1=row.insertCell(0);
+let c2=row.insertCell(1);
+
+c1.innerText=mode;
+c2.innerText=format(seconds);
+
+if(mode=="READ"){
+totalRead+=seconds;
+document.getElementById("totalRead").innerText=format(totalRead);
+}
+
+}
+
+</script>
+
+</body>
 </html>
