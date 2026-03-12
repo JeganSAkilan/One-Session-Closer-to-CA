@@ -107,6 +107,7 @@ font-size:18px;
 <th>Subject</th>
 <th>Mode</th>
 <th>Duration</th>
+<th>Delete</th>
 </tr>
 
 <tbody id="logTable"></tbody>
@@ -277,7 +278,7 @@ table.innerHTML="";
 let subjectTotals={};
 let totalRead=0;
 
-logs.forEach(log=>{
+logs.forEach(log,index)=>{
 
 let row=table.insertRow();
 
@@ -286,6 +287,8 @@ row.insertCell(1).innerText=log.subject;
 row.insertCell(2).innerText=log.mode;
 row.insertCell(3).innerText=format(log.duration);
 
+let deleteCell = row.insertCell(4);
+deleteCell.innerHTML = "<button onclick='deleteLog("+index+")'>Delete</button>";
 if(log.mode=="READ"){
 
 totalRead+=log.duration;
@@ -311,6 +314,17 @@ summary += sub + " : " + format(subjectTotals[sub]) + "<br>";
 }
 
 document.getElementById("summary").innerHTML = summary;
+
+}
+function deleteLog(index){
+
+if(!confirm("Delete this log entry?")) return;
+
+logs.splice(index,1);
+
+localStorage.setItem("studyLogs", JSON.stringify(logs));
+
+renderLogs();
 
 }
 
