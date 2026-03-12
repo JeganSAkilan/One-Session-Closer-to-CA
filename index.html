@@ -20,9 +20,9 @@ margin:25px 0;
 }
 
 button{
-padding:15px 30px;
-font-size:18px;
-margin:10px;
+padding:12px 25px;
+font-size:16px;
+margin:8px;
 border:none;
 border-radius:6px;
 cursor:pointer;
@@ -41,7 +41,7 @@ margin-top:10px;
 
 #log{
 margin-top:40px;
-max-width:700px;
+max-width:800px;
 margin-left:auto;
 margin-right:auto;
 }
@@ -59,11 +59,12 @@ text-align:center;
 }
 
 #summary{
-margin-top:25px;
+margin-top:20px;
 font-size:18px;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -90,7 +91,7 @@ font-size:18px;
 <button id="stopBtn" onclick="stopTimer()">STOP</button>
 <button id="resetBtn" onclick="resetTimer()">RESET</button>
 
-<h3>CONTROL TIME CONQUER TITLE</h3>
+<h3>CONTROL TIME • CONQUER TITLE</h3>
 
 <div>Total Read Time: <span id="totalRead">00:00:00</span></div>
 
@@ -118,12 +119,12 @@ font-size:18px;
 
 <script>
 
-let mode = "";
-let startTime = null;
+let mode="";
+let startTime=null;
 let timer;
 
 let flickerInterval;
-let flickerSpeed = 0;
+let flickerSpeed=0;
 
 let logs = JSON.parse(localStorage.getItem("studyLogs")) || [];
 
@@ -143,15 +144,15 @@ function getElapsed(){
 
 if(!startTime) return 0;
 
-return Math.floor((Date.now() - startTime) / 1000);
+return Math.floor((Date.now()-startTime)/1000);
 
 }
 
 function updateTimer(){
 
-let seconds = getElapsed();
+let seconds=getElapsed();
 
-document.getElementById("timer").innerText = format(seconds);
+document.getElementById("timer").innerText=format(seconds);
 
 if(mode=="RELAX"){
 
@@ -171,13 +172,13 @@ function startFlicker(speed){
 
 clearInterval(flickerInterval);
 
-flickerSpeed = speed;
+flickerSpeed=speed;
 
 let toggle=false;
 
 flickerInterval=setInterval(()=>{
 
-document.body.style.background =
+document.body.style.background=
 toggle ? "#ffcccc" : "#ff6666";
 
 toggle=!toggle;
@@ -199,13 +200,13 @@ if(startTime){
 stopTimer();
 }
 
-mode = newMode;
-startTime = Date.now();
+mode=newMode;
+startTime=Date.now();
 
 localStorage.setItem("currentMode",mode);
 localStorage.setItem("startTime",startTime);
 
-timer = setInterval(updateTimer,1000);
+timer=setInterval(updateTimer,1000);
 
 }
 
@@ -228,11 +229,11 @@ function stopTimer(){
 
 clearInterval(timer);
 
-let seconds = getElapsed();
+let seconds=getElapsed();
 
 if(seconds>0){
 
-let subject = mode=="RELAX"
+let subject=mode=="RELAX"
 ? "Break"
 : document.getElementById("subject").value;
 
@@ -270,6 +271,18 @@ location.reload();
 
 }
 
+function deleteLog(index){
+
+if(!confirm("Delete this log entry?")) return;
+
+logs.splice(index,1);
+
+localStorage.setItem("studyLogs",JSON.stringify(logs));
+
+renderLogs();
+
+}
+
 function renderLogs(){
 
 let table=document.getElementById("logTable");
@@ -278,7 +291,7 @@ table.innerHTML="";
 let subjectTotals={};
 let totalRead=0;
 
-logs.forEach(log,index)=>{
+logs.forEach((log,index)=>{
 
 let row=table.insertRow();
 
@@ -287,8 +300,9 @@ row.insertCell(1).innerText=log.subject;
 row.insertCell(2).innerText=log.mode;
 row.insertCell(3).innerText=format(log.duration);
 
-let deleteCell = row.insertCell(4);
-deleteCell.innerHTML = "<button onclick='deleteLog("+index+")'>Delete</button>";
+let deleteCell=row.insertCell(4);
+deleteCell.innerHTML="<button onclick='deleteLog("+index+")'>Delete</button>";
+
 if(log.mode=="READ"){
 
 totalRead+=log.duration;
@@ -309,36 +323,25 @@ let summary="";
 
 for(let sub in subjectTotals){
 
-summary += sub + " : " + format(subjectTotals[sub]) + "<br>";
+summary+=sub+" : "+format(subjectTotals[sub])+"<br>";
 
 }
 
-document.getElementById("summary").innerHTML = summary;
-
-}
-function deleteLog(index){
-
-if(!confirm("Delete this log entry?")) return;
-
-logs.splice(index,1);
-
-localStorage.setItem("studyLogs", JSON.stringify(logs));
-
-renderLogs();
+document.getElementById("summary").innerHTML=summary;
 
 }
 
 function restoreSession(){
 
-let savedMode = localStorage.getItem("currentMode");
-let savedStart = localStorage.getItem("startTime");
+let savedMode=localStorage.getItem("currentMode");
+let savedStart=localStorage.getItem("startTime");
 
 if(savedMode && savedStart){
 
-mode = savedMode;
-startTime = parseInt(savedStart);
+mode=savedMode;
+startTime=parseInt(savedStart);
 
-timer = setInterval(updateTimer,1000);
+timer=setInterval(updateTimer,1000);
 
 }
 
@@ -346,7 +349,7 @@ timer = setInterval(updateTimer,1000);
 
 function updateDateTime(){
 
-document.getElementById("datetime").innerText =
+document.getElementById("datetime").innerText=
 new Date().toLocaleString();
 
 }
