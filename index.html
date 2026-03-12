@@ -2,27 +2,37 @@
 <html>
 <head>
 <title>One Session Closer to CA</title>
+
 <style>
+
 body{
-    font-family: Arial;
-    text-align:center;
-    background:#f4f4f4;
+font-family:Arial;
+text-align:center;
+background:#f4f4f4;
+transition:background 0.4s;
 }
 
 h1{
-    margin-top:20px;
+margin-top:20px;
+}
+
+#datetime{
+font-size:18px;
+margin-top:10px;
 }
 
 #timer{
-    font-size:60px;
-    margin:20px;
+font-size:60px;
+margin:20px;
 }
 
 button{
-    padding:15px 25px;
-    font-size:18px;
-    margin:10px;
-    cursor:pointer;
+padding:15px 25px;
+font-size:18px;
+margin:10px;
+cursor:pointer;
+border:none;
+border-radius:6px;
 }
 
 #readBtn{background:green;color:white;}
@@ -30,24 +40,31 @@ button{
 #stopBtn{background:#444;color:white;}
 #resetBtn{background:red;color:white;}
 
+select{
+padding:10px;
+font-size:16px;
+margin-top:10px;
+}
+
 #log{
-    margin-top:30px;
-    width:60%;
-    margin-left:auto;
-    margin-right:auto;
-    text-align:left;
+margin-top:30px;
+width:70%;
+margin-left:auto;
+margin-right:auto;
+text-align:left;
 }
 
 table{
-    width:100%;
-    border-collapse:collapse;
+width:100%;
+border-collapse:collapse;
 }
 
 th,td{
-    border:1px solid #ccc;
-    padding:8px;
-    text-align:center;
+border:1px solid #ccc;
+padding:8px;
+text-align:center;
 }
+
 </style>
 </head>
 
@@ -55,27 +72,47 @@ th,td{
 
 <h1>One Session Closer to CA</h1>
 
+<div id="datetime"></div>
+
 <div id="timer">00:00:00</div>
 
-  
+<div>
+<select id="subject">
+<option value="FR">FR</option>
+<option value="AFM">AFM</option>
+<option value="Audit">Audit</option>
+<option value="DT">DT</option>
+<option value="IDT">IDT</option>
+<option value="IBS">IBS</option>
+</select>
+</div>
+
 <button id="readBtn" onclick="startRead()">READ</button>
 <button id="relaxBtn" onclick="startRelax()">RELAX</button>
 <button id="stopBtn" onclick="stopTimer()">STOP</button>
 <button id="resetBtn" onclick="resetTimer()">RESET</button>
 
 <h3>CONTROL TIME CONQUER TITLE</h3>
-  
+
 <div>Total Read Time: <span id="totalRead">00:00:00</span></div>
 
 <div id="log">
+
 <h2>Session Log</h2>
+
 <table>
+
 <tr>
+<th>Date</th>
+<th>Subject</th>
 <th>Mode</th>
 <th>Duration</th>
 </tr>
+
 <tbody id="logTable"></tbody>
+
 </table>
+
 </div>
 
 <script>
@@ -83,27 +120,73 @@ th,td{
 let timer;
 let seconds=0;
 let mode="";
-let startTime=0;
 let totalRead=0;
 
+let flickerInterval;
+let flickerSpeed=0;
+
 function format(sec){
+
 let h=Math.floor(sec/3600);
 let m=Math.floor((sec%3600)/60);
 let s=sec%60;
 
 return String(h).padStart(2,'0')+":"+
-       String(m).padStart(2,'0')+":"+
-       String(s).padStart(2,'0');
+String(m).padStart(2,'0')+":"+
+String(s).padStart(2,'0');
+
 }
 
 function updateTimer(){
+
 seconds++;
+
 document.getElementById("timer").innerText=format(seconds);
+
+if(mode=="RELAX"){
+
+if(seconds>=300 && flickerSpeed!=900){
+startFlicker(900);
+}
+
+if(seconds>=600 && flickerSpeed!=250){
+startFlicker(250);
+}
+
+}
+
+}
+
+function startFlicker(speed){
+
+clearInterval(flickerInterval);
+
+flickerSpeed=speed;
+
+let toggle=false;
+
+flickerInterval=setInterval(()=>{
+
+document.body.style.background = toggle ? "#ffcccc" : "#ff6666";
+
+toggle=!toggle;
+
+},speed);
+
+}
+
+function stopFlicker(){
+
+clearInterval(flickerInterval);
+flickerSpeed=0;
+
 }
 
 function startRead(){
 
 switchMode("READ");
+
+stopFlicker();
 
 document.body.style.background="#e8ffe8";
 
@@ -119,7 +202,7 @@ document.body.style.background="#ffcccc";
 
 function switchMode(newMode){
 
-if(mode!=""){
+if(mode!="" && seconds>0){
 logSession();
 }
 
@@ -136,23 +219,33 @@ function stopTimer(){
 
 clearInterval(timer);
 
-if(mode!=""){
+stopFlicker();
+
+if(mode!="" && seconds>0){
 logSession();
-mode="";
 }
+
+mode="";
 
 }
 
 function resetTimer(){
 
+let confirmReset=confirm("Are you sure? The session log will reset now?");
+
+if(!confirmReset) return;
+
 clearInterval(timer);
+
 seconds=0;
 mode="";
 totalRead=0;
 
 document.getElementById("timer").innerText="00:00:00";
 document.getElementById("totalRead").innerText="00:00:00";
+
 document.getElementById("logTable").innerHTML="";
+
 document.body.style.background="#f4f4f4";
 
 }
@@ -165,136 +258,43 @@ let row=table.insertRow();
 
 let c1=row.insertCell(0);
 let c2=row.insertCell(1);
+let c3=row.insertCell(2);
+let c4=row.insertCell(3);
 
-c1.innerText=mode;
-c2.innerText=format(seconds);
+let now=new Date();
 
-if(mode=="READ"){
-totalRead+=seconds;
-document.getElementById("totalRead").innerText=format(totalRead);
-}
+let subject = mode=="RELAX" ? "Break" : document.getElementById("subject").value;
 
-}
-
-</script>
-
-</body>
-</html><button id="relaxBtn" onclick="startRelax()">RELAX</button>
-<button id="stopBtn" onclick="stopTimer()">STOP</button>
-<button id="resetBtn" onclick="resetTimer()">RESET</button>
-
-<h3>CONTROL TIME CONQUER TITLE</h3>
-  
-<div>Total Read Time: <span id="totalRead">00:00:00</span></div>
-
-<div id="log">
-<h2>Session Log</h2>
-<table>
-<tr>
-<th>Mode</th>
-<th>Duration</th>
-</tr>
-<tbody id="logTable"></tbody>
-</table>
-</div>
-
-<script>
-
-let timer;
-let seconds=0;
-let mode="";
-let startTime=0;
-let totalRead=0;
-
-function format(sec){
-let h=Math.floor(sec/3600);
-let m=Math.floor((sec%3600)/60);
-let s=sec%60;
-
-return String(h).padStart(2,'0')+":"+
-       String(m).padStart(2,'0')+":"+
-       String(s).padStart(2,'0');
-}
-
-function updateTimer(){
-seconds++;
-document.getElementById("timer").innerText=format(seconds);
-}
-
-function startRead(){
-
-switchMode("READ");
-
-document.body.style.background="#e8ffe8";
-
-}
-
-function startRelax(){
-
-switchMode("RELAX");
-
-document.body.style.background="#ffcccc";
-
-}
-
-function switchMode(newMode){
-
-if(mode!=""){
-logSession();
-}
-
-mode=newMode;
-seconds=0;
-
-clearInterval(timer);
-
-timer=setInterval(updateTimer,1000);
-
-}
-
-function stopTimer(){
-
-clearInterval(timer);
-
-if(mode!=""){
-logSession();
-mode="";
-}
-
-}
-
-function resetTimer(){
-
-clearInterval(timer);
-seconds=0;
-mode="";
-totalRead=0;
-
-document.getElementById("timer").innerText="00:00:00";
-document.getElementById("totalRead").innerText="00:00:00";
-document.getElementById("logTable").innerHTML="";
-document.body.style.background="#f4f4f4";
-
-}
-
-function logSession(){
-
-let table=document.getElementById("logTable");
-
-let row=table.insertRow();
-
-let c1=row.insertCell(0);
-let c2=row.insertCell(1);
-
-c1.innerText=mode;
-c2.innerText=format(seconds);
+c1.innerText=now.toLocaleString();
+c2.innerText=subject;
+c3.innerText=mode;
+c4.innerText=format(seconds);
 
 if(mode=="READ"){
+
 totalRead+=seconds;
+
 document.getElementById("totalRead").innerText=format(totalRead);
+
 }
 
 }
+
+function updateDateTime(){
+
+let now=new Date();
+
+document.getElementById("datetime").innerText=now.toLocaleString();
+
+}
+
+setInterval(updateDateTime,1000);
+
+window.onbeforeunload=function(){
+
+return "Are you sure? The session log will reset now?";
+
+};
 
 </script>
 
